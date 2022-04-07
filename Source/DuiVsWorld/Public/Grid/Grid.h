@@ -4,23 +4,36 @@
 
 #include "CoreMinimal.h"
 #include "Components/BoxComponent.h"
+#include "Components/DecalComponent.h"
+#include "Components/InstancedStaticMeshComponent.h"
 #include "GameFramework/Actor.h"
 #include "Grid.generated.h"
 
-USTRUCT()
-struct FTileInfo
+struct FTile
 {
-	GENERATED_BODY()
-	
-	int Cost;
-};
+public:
+	FTile()
+	{
+		DecalComponent = nullptr;
+	}
 
-USTRUCT()
-struct FTileColumn
-{
-	GENERATED_BODY()
-	
-	TArray<FTileInfo> Columns;
+	FTile(int cost, FVector location, UDecalComponent* decalComponent)
+	{
+		Cost = cost;
+		Location = location;
+		DecalComponent = decalComponent;
+	}
+
+	void SetVisibility(bool Visibility)
+	{
+		if (DecalComponent)
+		{
+			DecalComponent->SetVisibility(Visibility);
+		}
+	}
+	int Cost = 1;
+	FVector Location;
+	UDecalComponent* DecalComponent;
 };
 
 UCLASS()
@@ -54,22 +67,23 @@ protected:
 	
 	UPROPERTY(EditAnywhere)
 	bool bGenerateDefaultTile;
-	
+
 	UFUNCTION(BlueprintCallable)
 	void Initialize(const float DecalTTL = 0.0f);
 	
 	UPROPERTY(EditDefaultsOnly)
 	UMaterial* TileMaterial;
 
-	TArray<FTileColumn> GridTile;
-
 private:
-	
 	const float GetUsableTileSize() { return TileSize * 0.9f; }
 	
 	void RemoveAllDecals();
 	
-	UBoxComponent* BoxBounds;
+	void EmptyGrid();
+	
+	UBoxComponent* BoxBounds = nullptr;
 
 	TArray<UDecalComponent*> Decals;
+
+	TArray<FTile> Grid;
 };
